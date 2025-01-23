@@ -40,10 +40,9 @@ class Ads extends Model
         $adsCollection = new Collection();
         $newCampaignData = [];
         $newTargetingGroupData = [];
-
+        Ads::truncate();
         foreach ($dataRows as $row) {
             $readableColumns = ParseService::columnNames($row);
-            Ads::truncate();
             $adsCollection->push(new self($readableColumns));
             $newCampaignData = ParseService::processCampaign(
                 $readableColumns,
