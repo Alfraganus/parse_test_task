@@ -38,17 +38,20 @@ class ParseService
     {
         if (!empty($newCampaignData)) {
             AdsCampaign::upsert(array_values($newCampaignData), ['id']);
-             print_r("Upserted new campaigns.");
+            print_r("Upserted new campaigns:\n");
+            print_r(array_values($newCampaignData));
         }
 
         if (!empty($newTargetingGroupData)) {
             AdsAdset::upsert(array_values($newTargetingGroupData), ['id']);
-             print_r("Upserted new targeting groups.");
+            print_r("Upserted new targeting groups:\n");
+            print_r(array_values($newTargetingGroupData));
         }
 
         if (!$adsCollection->isEmpty()) {
             Ads::upsert($adsCollection->toArray(), ['id']);
-             print_r("Upserted new ads.");
+            print_r("Upserted new ads data:\n");
+            print_r($adsCollection->toArray());
         }
     }
 
@@ -56,17 +59,17 @@ class ParseService
     {
         foreach ($newCampaignData as $campaign) {
             AdsCampaign::updateOrCreate(['id' => $campaign['id']], $campaign);
-             print_r("Inserted/Updated campaign: {$campaign['id']}");
+             print_r("Inserted/Updated campaign: {$campaign['id']}\n");
         }
 
         foreach ($newTargetingGroupData as $targetingGroup) {
             AdsAdset::updateOrCreate(['id' => $targetingGroup['id']], $targetingGroup);
-             print_r("Inserted/Updated targeting group: {$targetingGroup['id']}");
+             print_r("Inserted/Updated targeting group: {$targetingGroup['id']}\n");
         }
 
         foreach ($adsCollection as $ad) {
             Ads::updateOrCreate(['id' => $ad->id], $ad->toArray());
-             print_r("Inserted/Updated ad: {$ad->id}");
+             print_r("Inserted/Updated ad: {$ad->id}\n");
         }
     }
 
