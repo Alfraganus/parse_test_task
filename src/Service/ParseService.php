@@ -52,7 +52,7 @@ class ParseService
     ): void
     {
         if (!empty($newCampaignData)) {
-            AdsCampaign::query()->create(array_values($newCampaignData));
+            AdsCampaign::upsert(array_values($newCampaignData), ['id']);
             print_r("Upserted new campaigns:\n");
             print_r(array_values($newCampaignData));
         }
@@ -64,11 +64,7 @@ class ParseService
         }
 
         if (!$adsCollection->isEmpty()) {
-            Ads::upsert(
-                $adsCollection->toArray(),
-                ['title', 'spending_amount', 'reference_ad_id'],
-                ['impression_count', 'click_count']
-            );
+            Ads::upsert($adsCollection->toArray(),['title']);
             print_r("Upserted new ads data:\n");
             print_r($adsCollection->toArray());
         }
