@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Service;
 
 use App\Models\AdsAdset;
@@ -8,33 +9,47 @@ use Illuminate\Database\Eloquent\Collection;
 
 class ParseService
 {
-    public static function processCampaign(array $readableColumns, array $existingCampaignIds, array $newCampaignData, array $row): array
+    public static function processCampaign(
+        array $readableColumns,
+        array $existingCampaignIds,
+        array $newCampaignData,
+        array $row
+    ): array
     {
         if (!isset($existingCampaignIds[$readableColumns['campaign_identifier']])) {
             $newCampaignData[$readableColumns['campaign_identifier']] = [
                 'id' => $readableColumns['campaign_identifier'],
                 'title' => $row[5],
             ];
-             print_r("New campaign detected, adding: {$readableColumns['campaign_identifier']}");
+            print_r("New campaign detected, adding: {$readableColumns['campaign_identifier']}");
         }
 
         return $newCampaignData;
     }
 
-    public static function processTargetingGroup(array $readableColumns, array $existingTargetingGroupIds, array $newTargetingGroupData, array $row): array
+    public static function processTargetingGroup(
+        array $readableColumns,
+        array $existingTargetingGroupIds,
+        array $newTargetingGroupData,
+        array $row
+    ): array
     {
         if (!isset($existingTargetingGroupIds[$readableColumns['targeting_group_id']])) {
             $newTargetingGroupData[$readableColumns['targeting_group_id']] = [
                 'id' => $readableColumns['targeting_group_id'],
                 'title' => $row[7],
             ];
-             print_r("New targeting group detected, adding: {$readableColumns['targeting_group_id']}");
+            print_r("New targeting group detected, adding: {$readableColumns['targeting_group_id']}");
         }
 
         return $newTargetingGroupData;
     }
 
-    public static function handleMassiveInsertions(array $newCampaignData, array $newTargetingGroupData, Collection $adsCollection): void
+    public static function handleMassiveInsertions(
+        array      $newCampaignData,
+        array      $newTargetingGroupData,
+        Collection $adsCollection
+    ): void
     {
         if (!empty($newCampaignData)) {
             AdsCampaign::upsert(array_values($newCampaignData), ['id']);
@@ -49,31 +64,48 @@ class ParseService
         }
 
         if (!$adsCollection->isEmpty()) {
-            Ads::upsert($adsCollection->toArray(), ['id']);
+            Ads::upsert(
+                $adsCollection->toArray(),
+                ['title', 'spending_amount', 'reference_ad_id'],
+                ['impression_count', 'click_count']
+            );
             print_r("Upserted new ads data:\n");
             print_r($adsCollection->toArray());
         }
     }
 
-    public static function handleSingleInsertions(array $newCampaignData, array $newTargetingGroupData, Collection $adsCollection): void
+    public static function handleSingleInsertions(
+        array      $newCampaignData,
+        array      $newTargetingGroupData,
+        Collection $adsCollection
+    ): void
     {
         foreach ($newCampaignData as $campaign) {
-            AdsCampaign::updateOrCreate(['id' => $campaign['id']], $campaign);
-             print_r("Inserted/Updated campaign: {$campaign['id']}\n");
+            AdsCampaign::updateOrCreate(
+                ['title' => $campaign['title']],
+                $campaign
+            );
+            print_r("Inserted/Updated campaign: {$campaign['title']}\n");
         }
 
         foreach ($newTargetingGroupData as $targetingGroup) {
-            AdsAdset::updateOrCreate(['id' => $targetingGroup['id']], $targetingGroup);
-             print_r("Inserted/Updated targeting group: {$targetingGroup['id']}\n");
+            AdsAdset::updateOrCreate(
+                ['title' => $targetingGroup['title']],
+                $targetingGroup
+            );
+            print_r("Inserted/Updated targeting group: {$targetingGroup['title']}\n");
         }
 
         foreach ($adsCollection as $ad) {
-            Ads::updateOrCreate(['id' => $ad->id], $ad->toArray());
-             print_r("Inserted/Updated ad: {$ad->id}\n");
+            Ads::updateOrCreate(
+                ['title' => $ad->title],
+                $ad->toArray()
+            );
+            print_r("Inserted/Updated ad: {$ad->title}\n");
         }
     }
 
-    public static function columnNames($documentRow)
+    public static function columnNames($documentRow): array
     {
         return [
             'record_date' => $documentRow[0],

@@ -43,7 +43,14 @@ class Ads extends Model
         foreach ($dataRows as $row) {
             $readableColumns = ParseService::columnNames($row);
 
-            $adsCollection->push(new self($readableColumns));
+            $existingAd = Ads::where('reference_ad_id', $readableColumns['reference_ad_id'])
+                ->where('advertisement_name', $readableColumns['advertisement_name'])
+                ->where('campaign_identifier', $readableColumns['campaign_identifier'])
+                ->first();
+
+            if (!$existingAd) {
+                $adsCollection->push(new self($readableColumns));
+            }
 
             $newCampaignData = ParseService::processCampaign($readableColumns, $existingCampaignIds, $newCampaignData, $row);
             $newTargetingGroupData = ParseService::processTargetingGroup($readableColumns, $existingTargetingGroupIds, $newTargetingGroupData, $row);
@@ -55,4 +62,5 @@ class Ads extends Model
             ParseService::handleSingleInsertions($newCampaignData, $newTargetingGroupData, $adsCollection);
         }
     }
+
 }
