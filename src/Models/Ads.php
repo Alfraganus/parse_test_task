@@ -48,12 +48,10 @@ class Ads extends Model
             $newCampaignData = ParseService::processCampaign($readableColumns, $existingCampaignIds, $newCampaignData, $row);
             $newTargetingGroupData = ParseService::processTargetingGroup($readableColumns, $existingTargetingGroupIds, $newTargetingGroupData, $row);
         }
+        $fileProcessingMode
+            ? ParseService::handleMassiveInsertions($newCampaignData, $newTargetingGroupData, $adsCollection)
+            :  ParseService::handleSingleInsertions($newCampaignData, $newTargetingGroupData, $adsCollection);
 
-        if ($fileProcessingMode) {
-            ParseService::handleMassiveInsertions($newCampaignData, $newTargetingGroupData, $adsCollection);
-        } else {
-            ParseService::handleSingleInsertions($newCampaignData, $newTargetingGroupData, $adsCollection);
-        }
     }
 
 }
