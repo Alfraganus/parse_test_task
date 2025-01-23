@@ -1,0 +1,64 @@
+volumes:
+    php-vendor:
+    dbbase:
+    mariadb:
+        driver: local
+
+networks:
+    internal:
+        driver: bridge
+
+services:
+    nginx:
+        build:
+            context: ./docker/development/nginx
+        environment:
+            - VIRTUAL_HOST=candidate.local
+        ports:
+            - "8080:80"
+        volumes:
+            - ./:/app:rw
+        depends_on:
+            - php
+            - mariadb
+        networks:
+            internal:
+
+    php:
+        build:
+            context: ./docker/development/php-fpm
+        volumes:
+            - ./:/app:rw
+            - php-vendor:/app/vendor
+        networks:
+            internal:
+
+    mariadb:
+        image: mariadb
+        command: --default-authentication-plugin=mysql_native_password --innodb_use_native_aio=0
+        environment:
+            MYSQL_ROOT_PASSWORD: jsd_k7tg
+            MYSQL_DATABASE: ads
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: admin22
+        ports:
+            - "6033:3306"
+        volumes:
+            - dbbase:/var/lib/mysql
+            - ./docker/development/mysql/ads.sql:/docker-entrypoint-initdb.d/ads.sql
+        networks:
+            internal:
+
+    phpmyadmin:
+        image: phpmyadmin:latest
+        links:
+            - mariadb
+        environment:
+            PMA_HOST: mariadb
+            PMA_PORT: 3306
+            PMA_ARBITRARY: 1
+            restart: always
+        ports:
+            - "8081:80"
+        networks:
+            internal:
