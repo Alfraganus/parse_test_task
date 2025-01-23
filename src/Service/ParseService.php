@@ -52,7 +52,7 @@ class ParseService
     ): void
     {
         if (!empty($newCampaignData)) {
-            AdsCampaign::upsert(array_values($newCampaignData), ['id']);
+            AdsCampaign::query()->create(array_values($newCampaignData));
             print_r("Upserted new campaigns:\n");
             print_r(array_values($newCampaignData));
         }
